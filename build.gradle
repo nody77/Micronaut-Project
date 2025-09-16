@@ -1,0 +1,100 @@
+plugins {
+    id("io.micronaut.application") version "4.5.4"
+    id("com.gradleup.shadow") version "8.3.7"
+    id("io.micronaut.aot") version "4.5.4"
+
+    id("jacoco")
+    id("org.sonarqube") version "4.4.1.3373"
+
+}
+
+version = "0.1"
+group = "example.micronaut"
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    annotationProcessor("io.micronaut:micronaut-http-validation")
+    annotationProcessor("io.micronaut.serde:micronaut-serde-processor")
+    annotationProcessor("io.micronaut.validation:micronaut-validation-processor")
+
+    implementation("io.micronaut.validation:micronaut-validation")
+    implementation("io.micronaut.serde:micronaut-serde-jackson")
+    implementation("io.micronaut.sql:micronaut-hibernate-jpa")
+    implementation("io.micronaut.data:micronaut-data-tx-hibernate")
+    implementation("io.micronaut.sql:micronaut-jdbc-hikari")
+    implementation("io.micronaut.views:micronaut-views-velocity")
+
+    compileOnly("io.micronaut:micronaut-http-client")
+
+    runtimeOnly("ch.qos.logback:logback-classic")
+    runtimeOnly("com.h2database:h2")
+
+    testImplementation("io.micronaut:micronaut-http-client")
+}
+
+
+application {
+    mainClass = "example.micronaut.Application"
+}
+java {
+    sourceCompatibility = JavaVersion.toVersion("21")
+    targetCompatibility = JavaVersion.toVersion("21")
+}
+
+
+graalvmNative.toolchainDetection = false
+
+micronaut {
+    runtime("netty")
+    testRuntime("junit5")
+    processing {
+        incremental(true)
+        annotations("example.micronaut.*")
+    }
+    aot {
+        // Please review carefully the optimizations enabled below
+        // Check https://micronaut-projects.github.io/micronaut-aot/latest/guide/ for more details
+        optimizeServiceLoading = false
+        convertYamlToJava = false
+        precomputeOperations = true
+        cacheEnvironment = true
+        optimizeClassLoading = true
+        deduceEnvironment = true
+        optimizeNetty = true
+        replaceLogbackXml = true
+    }
+}
+
+jacoco {
+    toolVersion = "0.8.13"
+    reportsDirectory = layout.buildDirectory.dir('customJacocoReportDir')
+}
+test {
+    finalizedBy jacocoTestReport
+}
+jacocoTestReport {
+    dependsOn test
+
+    reports {
+        html.required = true
+        xml.required = false
+        csv.required = false
+    }
+}
+
+sonar {
+    properties {
+        property "sonar.projectKey", "your_project_key"
+        property "sonar.host.url", "http://localhost:9000" // Replace if using SonarCloud
+        property "sonar.coverage.jacoco.xmlReportPaths", "${buildDir}/reports/jacoco/test/jacocoTestReport.xml"
+    }
+}
+
+tasks.named("dockerfileNative") {
+    jdkVersion = "21"
+}
+
+
