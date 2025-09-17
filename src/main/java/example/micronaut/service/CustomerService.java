@@ -1,7 +1,6 @@
 package example.micronaut.service;
 
 import example.micronaut.entity.Customer;
-import example.micronaut.exception.CustomerNotFoundException;
 import example.micronaut.repository.CustomerRepositoryImpl;
 import jakarta.inject.Singleton;
 import jakarta.validation.constraints.NotBlank;
