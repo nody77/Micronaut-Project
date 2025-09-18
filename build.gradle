@@ -26,14 +26,23 @@ dependencies {
     implementation("io.micronaut.data:micronaut-data-tx-hibernate")
     implementation("io.micronaut.sql:micronaut-jdbc-hikari")
     implementation("io.micronaut.views:micronaut-views-velocity")
+
+    // JMS Dependencies
+
     implementation("io.micronaut.jms:micronaut-jms-activemq-classic")
-    implementation("io.micronaut.jms:micronaut-jms-activemq-artemis")
-    implementation("io.micronaut.jms:micronaut-jms-sqs")
+    implementation("jakarta.jms:jakarta.jms-api:3.0.0")
+    runtimeOnly("org.apache.activemq:activemq-client:5.17.6")
+    implementation("io.micronaut:micronaut-runtime")
+
+
+
+
 
     compileOnly("io.micronaut:micronaut-http-client")
 
     runtimeOnly("ch.qos.logback:logback-classic")
     runtimeOnly("com.h2database:h2")
+    runtimeOnly("org.yaml:snakeyaml")
 
     testImplementation("io.micronaut:micronaut-http-client")
 }
