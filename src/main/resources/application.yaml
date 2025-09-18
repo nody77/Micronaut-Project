@@ -1,0 +1,6 @@
+jms:
+  enabled: true
+  activemq:
+    classic:
+      enabled: true
+      connection-string: tcp://localhost:61616
