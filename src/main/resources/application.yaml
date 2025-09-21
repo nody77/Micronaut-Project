@@ -4,3 +4,8 @@ jms:
     classic:
       enabled: true
       connection-string: tcp://localhost:61616
+
+
+kafka:
+  bootstrap:
+    servers: localhost:9092

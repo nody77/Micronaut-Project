@@ -34,8 +34,8 @@ dependencies {
     runtimeOnly("org.apache.activemq:activemq-client:5.17.6")
     implementation("io.micronaut:micronaut-runtime")
 
-
-
+    // Kafka Dependencies
+    implementation("io.micronaut.kafka:micronaut-kafka")
 
 
     compileOnly("io.micronaut:micronaut-http-client")
