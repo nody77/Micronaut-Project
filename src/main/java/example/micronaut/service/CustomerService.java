@@ -1,7 +1,7 @@
 package example.micronaut.service;
 
 import example.micronaut.entity.Customer;
-import example.micronaut.exception.CustomerNotFoundException;
+import example.micronaut.messaging.producer.KafkaCustomerCreationProducer;
 import example.micronaut.repository.CustomerRepositoryImpl;
 import jakarta.inject.Singleton;
 import jakarta.validation.constraints.NotBlank;
@@ -10,9 +10,11 @@ import jakarta.validation.constraints.NotBlank;
 public class CustomerService {
 
     private final CustomerRepositoryImpl customerRepository;
+    public final KafkaCustomerCreationProducer kafkaCustomerCreationProducer;
 
-    public CustomerService(CustomerRepositoryImpl customerRepository) {
+    public CustomerService(CustomerRepositoryImpl customerRepository, KafkaCustomerCreationProducer kafkaCustomerCreationProducer) {
         this.customerRepository = customerRepository;
+        this.kafkaCustomerCreationProducer = kafkaCustomerCreationProducer;
     }
 
     public Customer getCustomerbyId(long id){
@@ -20,7 +22,12 @@ public class CustomerService {
     }
 
     public Customer save(@NotBlank String name, @NotBlank String phoneNumber){
-         return customerRepository.addCustomer(name, phoneNumber);
+        Customer customer = customerRepository.addCustomer(name, phoneNumber);
+
+        String kafkaMessage = "Customer name = " + name + " Customer phone number = " + phoneNumber;
+        kafkaCustomerCreationProducer.sendCustomerCreated(customer.getId().toString(), kafkaMessage);
+        System.out.println("Kafka message sent: " + kafkaMessage);
+        return customer;
     }
 
 
