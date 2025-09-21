@@ -112,4 +112,10 @@ class CustomerControllerTest {
 
         return null;
     }
+
+
+    @Test
+    public void testKafka(){
+
+    }
 }

@@ -30,7 +30,7 @@ public class CustomerController {
 
     @Get("/{id}")
     Customer show(Long id){
-        return customerService.getCustomerbyId(id);
+        return customerService.getCustomerById(id);
     }
 
     @Put("/{id}")

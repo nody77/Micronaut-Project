@@ -13,11 +13,10 @@ import io.micronaut.http.annotation.Post;
 public class JMSMessageController {
 
     private final JMSMockQueueService jmsMockQueueService;
-    private final JMSMockQueueListener jmsMockQueueListener;
 
-    public JMSMessageController(JMSMockQueueService jmsMockQueueService, JMSMockQueueListener jmsMockQueueListener) {
+    public JMSMessageController(JMSMockQueueService jmsMockQueueService) {
         this.jmsMockQueueService = jmsMockQueueService;
-        this.jmsMockQueueListener = jmsMockQueueListener;
+
     }
 
     @Post("/send")
@@ -28,7 +27,7 @@ public class JMSMessageController {
 
     @Get
     public HttpResponse<String> checkMessageCount() {
-        String httpBody = "Message sent to JMS queue and the number of messages received equals = " + jmsMockQueueListener.getMessageCount();
+        String httpBody = "Message sent to JMS queue and the number of messages received equals = " + jmsMockQueueService.receivedMessagesNumber();
         return HttpResponse.ok(httpBody);
 
     }

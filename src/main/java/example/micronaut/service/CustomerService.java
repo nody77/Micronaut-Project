@@ -1,7 +1,7 @@
 package example.micronaut.service;
 
 import example.micronaut.entity.Customer;
-import example.micronaut.messaging.producer.KafkaCustomerCreationProducer;
+import example.micronaut.service.KafkaService;
 import example.micronaut.repository.CustomerRepositoryImpl;
 import jakarta.inject.Singleton;
 import jakarta.validation.constraints.NotBlank;
@@ -10,23 +10,21 @@ import jakarta.validation.constraints.NotBlank;
 public class CustomerService {
 
     private final CustomerRepositoryImpl customerRepository;
-    public final KafkaCustomerCreationProducer kafkaCustomerCreationProducer;
+    private final KafkaService kafkaService;
 
-    public CustomerService(CustomerRepositoryImpl customerRepository, KafkaCustomerCreationProducer kafkaCustomerCreationProducer) {
+    public CustomerService(CustomerRepositoryImpl customerRepository, KafkaService kafkaService) {
         this.customerRepository = customerRepository;
-        this.kafkaCustomerCreationProducer = kafkaCustomerCreationProducer;
+        this.kafkaService = kafkaService;
+
     }
 
-    public Customer getCustomerbyId(long id){
+    public Customer getCustomerById(long id){
         return customerRepository.getCustomerByID(id);
     }
 
     public Customer save(@NotBlank String name, @NotBlank String phoneNumber){
         Customer customer = customerRepository.addCustomer(name, phoneNumber);
-
-        String kafkaMessage = "Customer name = " + name + " Customer phone number = " + phoneNumber;
-        kafkaCustomerCreationProducer.sendCustomerCreated(customer.getId().toString(), kafkaMessage);
-        System.out.println("Kafka message sent: " + kafkaMessage);
+        kafkaService.sendKafkaMessage(customer);
         return customer;
     }
 
