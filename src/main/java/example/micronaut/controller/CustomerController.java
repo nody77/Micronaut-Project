@@ -1,7 +1,7 @@
 package example.micronaut.controller;
 
 import example.micronaut.entity.Customer;
-import example.micronaut.service.CustomerService;
+import example.micronaut.facade.CustomerFacade;
 
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.annotation.Body;
@@ -22,20 +22,20 @@ import static io.micronaut.http.HttpHeaders.LOCATION;
 @Controller("/customer")
 public class CustomerController {
 
-    private final CustomerService customerService;
+    private final CustomerFacade customerFacade;
 
-    public CustomerController(CustomerService customerService) {
-        this.customerService = customerService;
+    public CustomerController(CustomerFacade customerFacade) {
+        this.customerFacade = customerFacade;
     }
 
     @Get("/{id}")
     Customer show(Long id){
-        return customerService.getCustomerById(id);
+        return customerFacade.getCustomerById(id);
     }
 
     @Put("/{id}")
     HttpResponse<Object> update(Long id, @Body @Valid Customer customer) {
-        customerService.update(id, customer.getName(), customer.getPhoneNumber());
+        customerFacade.updateCustomerInfo(id, customer.getName(), customer.getPhoneNumber());
 
         return HttpResponse
                 .noContent()
@@ -45,7 +45,7 @@ public class CustomerController {
 
     @Post
     HttpResponse<Customer> save(@Body @Valid Customer customer) {
-        Customer newcustomer = customerService.save(customer.getName(), customer.getPhoneNumber());
+        Customer newcustomer = customerFacade.registerNewCustomer(customer.getName(), customer.getPhoneNumber());
 
         return HttpResponse
                 .created(newcustomer)
@@ -54,7 +54,7 @@ public class CustomerController {
 
     @Delete("/{id}")
     HttpResponse<Void> delete(Long id) {
-        customerService.delete(id);
+        customerFacade.removeCustomer(id);
         return HttpResponse.noContent();
     }
 

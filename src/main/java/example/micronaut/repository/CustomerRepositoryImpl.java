@@ -2,13 +2,17 @@ package example.micronaut.repository;
 
 import example.micronaut.entity.Customer;
 import example.micronaut.exception.CustomerNotFoundException;
+import example.micronaut.exception.DuplicatePhoneNumberException;
 import example.micronaut.exception.CustomerNotUpdatedException;
 import io.micronaut.transaction.annotation.ReadOnly;
 import io.micronaut.transaction.annotation.Transactional;
 
 import jakarta.inject.Singleton;
+
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceException;
 import jakarta.validation.constraints.NotBlank;
+import org.hibernate.exception.ConstraintViolationException;
 
 @Singleton
 public class CustomerRepositoryImpl implements CustomerRepository{
@@ -19,7 +23,7 @@ public class CustomerRepositoryImpl implements CustomerRepository{
         this.entityManager = entityManager;
     }
 
-    //exception handler needed
+
 
     @Override
     @ReadOnly
@@ -35,9 +39,18 @@ public class CustomerRepositoryImpl implements CustomerRepository{
     @Transactional
     public Customer addCustomer(@NotBlank String name, @NotBlank String phoneNumber){
 
-        Customer newCustomer = new Customer(name, phoneNumber);
-        entityManager.persist(newCustomer);
-        return newCustomer;
+        try {
+            Customer newCustomer = new Customer(name, phoneNumber);
+            entityManager.persist(newCustomer);
+            entityManager.flush();
+            return newCustomer;
+        }
+        catch(PersistenceException e){
+            if (isConstraintViolationException(e)) {
+                throw new DuplicatePhoneNumberException("This phone number is already in use");
+            }
+            throw e;
+        }
     }
 
     @Override
@@ -61,9 +74,20 @@ public class CustomerRepositoryImpl implements CustomerRepository{
 
         //handler or put it service
         if(numberOfEntitiesUpdated == 0){
-             throw new CustomerNotUpdatedException("Customer with id " + id + " not found");
+             throw new CustomerNotUpdatedException("Customer with id " + id + " not updated");
         }
 
         return numberOfEntitiesUpdated;
     }
+
+    private boolean isConstraintViolationException(Throwable e) {
+        while (e != null) {
+            if (e instanceof ConstraintViolationException) {
+                return true;
+            }
+            e = e.getCause();
+        }
+        return false;
+    }
+
 }

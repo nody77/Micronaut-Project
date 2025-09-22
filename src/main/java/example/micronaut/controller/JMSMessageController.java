@@ -1,7 +1,5 @@
 package example.micronaut.controller;
 
-
-import example.micronaut.messaging.listener.JMSMockQueueListener;
 import example.micronaut.service.JMSMockQueueService;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.annotation.Body;
@@ -16,7 +14,6 @@ public class JMSMessageController {
 
     public JMSMessageController(JMSMockQueueService jmsMockQueueService) {
         this.jmsMockQueueService = jmsMockQueueService;
-
     }
 
     @Post("/send")
@@ -29,7 +26,6 @@ public class JMSMessageController {
     public HttpResponse<String> checkMessageCount() {
         String httpBody = "Message sent to JMS queue and the number of messages received equals = " + jmsMockQueueService.receivedMessagesNumber();
         return HttpResponse.ok(httpBody);
-
     }
 
 }

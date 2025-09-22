@@ -1,7 +1,6 @@
 package example.micronaut.service;
 
 import example.micronaut.entity.Customer;
-import example.micronaut.service.KafkaService;
 import example.micronaut.repository.CustomerRepositoryImpl;
 import jakarta.inject.Singleton;
 import jakarta.validation.constraints.NotBlank;
@@ -10,22 +9,20 @@ import jakarta.validation.constraints.NotBlank;
 public class CustomerService {
 
     private final CustomerRepositoryImpl customerRepository;
-    private final KafkaService kafkaService;
 
-    public CustomerService(CustomerRepositoryImpl customerRepository, KafkaService kafkaService) {
+
+    public CustomerService(CustomerRepositoryImpl customerRepository) {
         this.customerRepository = customerRepository;
-        this.kafkaService = kafkaService;
+
 
     }
 
-    public Customer getCustomerById(long id){
+    public Customer getCustomerbyId(long id){
         return customerRepository.getCustomerByID(id);
     }
 
     public Customer save(@NotBlank String name, @NotBlank String phoneNumber){
-        Customer customer = customerRepository.addCustomer(name, phoneNumber);
-        kafkaService.sendKafkaMessage(customer);
-        return customer;
+        return customerRepository.addCustomer(name, phoneNumber);
     }
 
 

@@ -10,6 +10,7 @@ import io.micronaut.http.client.annotation.Client;
 import io.micronaut.http.client.exceptions.HttpClientResponseException;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import jakarta.inject.Inject;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -17,9 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static io.micronaut.http.HttpHeaders.LOCATION;
-import static io.micronaut.http.HttpStatus.CREATED;
-import static io.micronaut.http.HttpStatus.NOT_FOUND;
-import static io.micronaut.http.HttpStatus.NO_CONTENT;
+import static io.micronaut.http.HttpStatus.*;
+import static io.micronaut.http.HttpStatus.OK;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -113,9 +113,53 @@ class CustomerControllerTest {
         return null;
     }
 
+    @Test
+    void testJMSMessageSending(){
+        HttpRequest<String> request = HttpRequest.POST("/messages/send", "JMS Test Message");
+        HttpResponse<String> response = blockingClient.exchange(request , String.class);
+
+        String responseBody = response.getBody().orElse("");
+
+        assertEquals(OK, response.getStatus());
+        assertEquals("Message sent to JMS queue", responseBody);
+    }
+
 
     @Test
-    public void testKafka(){
+    void testJMSMessageReceived(){
 
+        testJMSMessageSending();
+
+        HttpRequest<String> request = HttpRequest.GET("/messages");
+        HttpResponse<String> response = blockingClient.exchange(request , String.class);
+
+        assertEquals(OK, response.getStatus());
+        assertEquals("Message sent to JMS queue and the number of messages received equals = 1", response.body());
+
+    }
+
+    @Test
+    void testDuplicationOfPhoneNumber() {
+        HttpRequest<Customer> request1 = HttpRequest.POST("/customer", new Customer("Ali", "0"));
+        HttpResponse<Customer> response = blockingClient.exchange(request1, Customer.class);
+        assertEquals(CREATED, response.getStatus());
+
+        HttpClientResponseException ex = assertThrows(HttpClientResponseException.class, () -> {
+            blockingClient.exchange(HttpRequest.POST("/customer", new Customer("Farah", "0")), String.class);
+        });
+
+        assertEquals(CONFLICT, ex.getStatus());
+        assertEquals("This phone number is already in use", ex.getResponse().getBody(String.class).orElse(""));
+    }
+
+
+    @Test
+    void testDeletingNonExistingCustomer(){
+        HttpClientResponseException thrown = assertThrows(HttpClientResponseException.class, () ->
+                blockingClient.exchange(HttpRequest.DELETE("/customer/99"))
+        );
+
+        assertNotNull(thrown.getResponse());
+        assertEquals(NOT_FOUND, thrown.getStatus());
     }
 }
