@@ -8,6 +8,8 @@ import io.micronaut.http.client.BlockingHttpClient;
 import io.micronaut.http.client.HttpClient;
 import io.micronaut.http.client.annotation.Client;
 import io.micronaut.http.client.exceptions.HttpClientResponseException;
+import io.micronaut.security.authentication.UsernamePasswordCredentials;
+import io.micronaut.security.token.render.BearerAccessRefreshToken;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import jakarta.inject.Inject;
 
@@ -115,7 +117,16 @@ class CustomerControllerTest {
 
     @Test
     void testJMSMessageSending(){
-        HttpRequest<String> request = HttpRequest.POST("/messages/send", "JMS Test Message");
+
+        UsernamePasswordCredentials creds = new UsernamePasswordCredentials("user", "password");
+        HttpRequest<?> loginRequest = HttpRequest.POST("/login", creds);
+        HttpResponse<BearerAccessRefreshToken> rsp = client.toBlocking().exchange(loginRequest, BearerAccessRefreshToken.class);
+        assertEquals(OK, rsp.getStatus());
+        BearerAccessRefreshToken bearerAccessRefreshToken = rsp.body();
+        String accessToken = bearerAccessRefreshToken.getAccessToken();
+
+
+        HttpRequest<String> request = HttpRequest.POST("/messages/send", "JMS Test Message").bearerAuth(accessToken);
         HttpResponse<String> response = blockingClient.exchange(request , String.class);
 
         String responseBody = response.getBody().orElse("");
@@ -124,13 +135,28 @@ class CustomerControllerTest {
         assertEquals("Message sent to JMS queue", responseBody);
     }
 
+    @Test
+    void accessingASecuredUrlWithoutAuthenticatingReturnsUnauthorized() {
+        HttpClientResponseException e = assertThrows(HttpClientResponseException.class, () -> {
+            client.toBlocking().exchange(HttpRequest.GET("/messages"));
+        });
+
+        assertEquals(UNAUTHORIZED, e.getStatus());
+    }
 
     @Test
     void testJMSMessageReceived(){
 
         testJMSMessageSending();
 
-        HttpRequest<String> request = HttpRequest.GET("/messages");
+        UsernamePasswordCredentials creds = new UsernamePasswordCredentials("user", "password");
+        HttpRequest<?> loginRequest = HttpRequest.POST("/login", creds);
+        HttpResponse<BearerAccessRefreshToken> rsp = client.toBlocking().exchange(loginRequest, BearerAccessRefreshToken.class);
+        assertEquals(OK, rsp.getStatus());
+        BearerAccessRefreshToken bearerAccessRefreshToken = rsp.body();
+        String accessToken = bearerAccessRefreshToken.getAccessToken();
+
+        HttpRequest<Object> request = HttpRequest.GET("/messages").bearerAuth(accessToken);
         HttpResponse<String> response = blockingClient.exchange(request , String.class);
 
         assertEquals(OK, response.getStatus());

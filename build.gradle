@@ -16,7 +16,9 @@ repositories {
 }
 
 dependencies {
+    annotationProcessor("io.micronaut.data:micronaut-data-processor")
     annotationProcessor("io.micronaut:micronaut-http-validation")
+    annotationProcessor("io.micronaut.security:micronaut-security-annotations")
     annotationProcessor("io.micronaut.serde:micronaut-serde-processor")
     annotationProcessor("io.micronaut.validation:micronaut-validation-processor")
 
@@ -25,6 +27,8 @@ dependencies {
     implementation("io.micronaut.sql:micronaut-hibernate-jpa")
     implementation("io.micronaut.data:micronaut-data-tx-hibernate")
     implementation("io.micronaut.sql:micronaut-jdbc-hikari")
+    implementation("io.micronaut.data:micronaut-data-jdbc")
+    implementation("jakarta.validation:jakarta.validation-api")
     implementation("io.micronaut.views:micronaut-views-velocity")
 
     // JMS Dependencies
@@ -37,6 +41,12 @@ dependencies {
     // Kafka Dependencies
     implementation("io.micronaut.kafka:micronaut-kafka")
 
+    // JWT Dependencies
+    implementation("io.micronaut.security:micronaut-security-jwt")
+    implementation("io.micronaut.reactor:micronaut-reactor")
+    implementation("io.micrometer:context-propagation")
+    aotPlugins platform("io.micronaut.platform:micronaut-platform:4.9.3")
+    aotPlugins("io.micronaut.security:micronaut-security-aot")
 
     compileOnly("io.micronaut:micronaut-http-client")
 

@@ -13,12 +13,15 @@ import io.micronaut.http.annotation.Put;
 import io.micronaut.scheduling.TaskExecutors;
 import io.micronaut.scheduling.annotation.ExecuteOn;
 
+import io.micronaut.security.annotation.Secured;
+import io.micronaut.security.rules.SecurityRule;
 import jakarta.validation.Valid;
 import java.net.URI;
 
 import static io.micronaut.http.HttpHeaders.LOCATION;
 
 @ExecuteOn(TaskExecutors.BLOCKING)
+@Secured(SecurityRule.IS_ANONYMOUS)
 @Controller("/customer")
 public class CustomerController {
 
