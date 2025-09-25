@@ -1,6 +1,8 @@
 package example.micronaut.facade;
 
+import example.micronaut.dto.CustomerDTO;
 import example.micronaut.entity.Customer;
+import example.micronaut.mapper.CustomerMapper;
 import example.micronaut.service.CustomerService;
 import example.micronaut.service.KafkaService;
 import jakarta.inject.Singleton;
@@ -11,10 +13,12 @@ public class CustomerFacade {
 
     private final CustomerService customerService;
     private final KafkaService kafkaService;
+    private final CustomerMapper customerMapper;
 
-    public CustomerFacade(CustomerService customerService, KafkaService kafkaService) {
+    public CustomerFacade(CustomerService customerService, KafkaService kafkaService, CustomerMapper customerMapper) {
         this.customerService = customerService;
         this.kafkaService = kafkaService;
+        this.customerMapper = customerMapper;
     }
 
 
@@ -23,8 +27,10 @@ public class CustomerFacade {
     }
 
 
-    public Customer registerNewCustomer(@NotBlank String name, @NotBlank String phoneNumber) {
-        Customer customer = customerService.save(name, phoneNumber);
+    public Customer registerNewCustomer(CustomerDTO customerDTO) {
+
+        Customer customer = customerMapper.toEntity(customerDTO);
+        customer = customerService.save(customer.getName(), customerDTO.getPhoneNumber());
         kafkaService.sendKafkaMessage(customer);
         return customer;
     }

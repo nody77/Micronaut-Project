@@ -32,7 +32,6 @@ dependencies {
     implementation("io.micronaut.views:micronaut-views-velocity")
 
     // JMS Dependencies
-
     implementation("io.micronaut.jms:micronaut-jms-activemq-classic")
     implementation("jakarta.jms:jakarta.jms-api:3.0.0")
     runtimeOnly("org.apache.activemq:activemq-client:5.17.6")
@@ -47,6 +46,12 @@ dependencies {
     implementation("io.micrometer:context-propagation")
     aotPlugins platform("io.micronaut.platform:micronaut-platform:4.9.3")
     aotPlugins("io.micronaut.security:micronaut-security-aot")
+
+    //MapStruct Dependencies
+    implementation("org.mapstruct:mapstruct:1.5.5.Final")
+    annotationProcessor("org.mapstruct:mapstruct-processor:1.5.5.Final")
+    implementation("jakarta.inject:jakarta.inject-api:2.0.1")
+
 
     compileOnly("io.micronaut:micronaut-http-client")
 

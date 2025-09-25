@@ -1,5 +1,6 @@
 package example.micronaut;
 
+import example.micronaut.dto.CustomerDTO;
 import example.micronaut.entity.Customer;
 
 import io.micronaut.http.HttpRequest;
@@ -56,13 +57,13 @@ class CustomerControllerTest {
 
         List<Long> customerIds = new ArrayList<>();
 
-        HttpRequest<?> request = HttpRequest.POST("/customer", new Customer("Ali", "0"));
+        HttpRequest<?> request = HttpRequest.POST("/customer", new CustomerDTO("Ali", "Ahmed", "0"));
         HttpResponse<?> response = blockingClient.exchange(request);
         customerIds.add(entityId(response));
 
         assertEquals(CREATED, response.getStatus());
 
-        request = HttpRequest.POST("/customer", new Customer("Ahmed", "1"));
+        request = HttpRequest.POST("/customer", new CustomerDTO("Ahmed", "Mohamed","1"));
         response = blockingClient.exchange(request);
 
         assertEquals(CREATED, response.getStatus());
@@ -73,19 +74,19 @@ class CustomerControllerTest {
 
         Customer customer = blockingClient.retrieve(request, Customer.class);
 
-        assertEquals("Ahmed", customer.getName());
+        assertEquals("Ahmed Mohamed", customer.getName());
 
-        request = HttpRequest.PUT("/customer/" + id, new Customer("Sarah" , "1"));
+        request = HttpRequest.PUT("/customer/" + id, new Customer("Sarah Seif","1"));
         response = blockingClient.exchange(request);
 
         assertEquals(NO_CONTENT, response.getStatus());
 
         request = HttpRequest.GET("/customer/" + id);
         customer = blockingClient.retrieve(request, Customer.class);
-        assertEquals("Sarah", customer.getName());
+        assertEquals("Sarah Seif", customer.getName());
 
         Long invalidID = customerIds.getLast() + 1;
-        HttpRequest<?> inalidPUTrequest = HttpRequest.PUT("/customer/" + invalidID, new Customer("Farah" , "1"));
+        HttpRequest<?> inalidPUTrequest = HttpRequest.PUT("/customer/" + invalidID, new Customer("Farah Khaled","1"));
         HttpClientResponseException exception = assertThrows(HttpClientResponseException.class, () -> {
             blockingClient.exchange(inalidPUTrequest);
         });
@@ -166,12 +167,12 @@ class CustomerControllerTest {
 
     @Test
     void testDuplicationOfPhoneNumber() {
-        HttpRequest<Customer> request1 = HttpRequest.POST("/customer", new Customer("Ali", "0"));
+        HttpRequest<CustomerDTO> request1 = HttpRequest.POST("/customer", new CustomerDTO("Ahmed", "Mohamed","1"));
         HttpResponse<Customer> response = blockingClient.exchange(request1, Customer.class);
         assertEquals(CREATED, response.getStatus());
 
         HttpClientResponseException ex = assertThrows(HttpClientResponseException.class, () -> {
-            blockingClient.exchange(HttpRequest.POST("/customer", new Customer("Farah", "0")), String.class);
+            blockingClient.exchange(HttpRequest.POST("/customer", new CustomerDTO("Sarah" , "Seif","1")), String.class);
         });
 
         assertEquals(CONFLICT, ex.getStatus());
@@ -187,5 +188,17 @@ class CustomerControllerTest {
 
         assertNotNull(thrown.getResponse());
         assertEquals(NOT_FOUND, thrown.getStatus());
+    }
+
+
+    @Test
+    void testUnAutherizationJwtAccess(){
+        UsernamePasswordCredentials creds = new UsernamePasswordCredentials("use", "password");
+        HttpRequest<?> loginRequest = HttpRequest.POST("/login", creds);
+        HttpClientResponseException exception = assertThrows(HttpClientResponseException.class, () -> {
+            client.toBlocking().exchange(loginRequest, BearerAccessRefreshToken.class);
+        });
+
+        assertEquals(UNAUTHORIZED, exception.getStatus());
     }
 }

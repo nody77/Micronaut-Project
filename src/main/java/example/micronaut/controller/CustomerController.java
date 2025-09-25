@@ -1,5 +1,6 @@
 package example.micronaut.controller;
 
+import example.micronaut.dto.CustomerDTO;
 import example.micronaut.entity.Customer;
 import example.micronaut.facade.CustomerFacade;
 
@@ -47,8 +48,8 @@ public class CustomerController {
 
 
     @Post
-    HttpResponse<Customer> save(@Body @Valid Customer customer) {
-        Customer newcustomer = customerFacade.registerNewCustomer(customer.getName(), customer.getPhoneNumber());
+    HttpResponse<Customer> save(@Body @Valid CustomerDTO customerDTO) {
+        Customer newcustomer = customerFacade.registerNewCustomer(customerDTO);
 
         return HttpResponse
                 .created(newcustomer)
